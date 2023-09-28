@@ -4,7 +4,9 @@ import streamlit as st
 import streamlit_authenticator as stauth
 import pickle
 from pathlib import Path
-
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 def ask_question(question,auto_train):
     try:
