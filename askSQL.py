@@ -5,9 +5,6 @@ sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 from vanna.local import LocalContext_OpenAI
 from utils import *
 import streamlit as st
-import streamlit_authenticator as stauth
-import pickle
-from pathlib import Path
 import hashlib
 
 def ask_question(question,auto_train):
@@ -120,7 +117,7 @@ elif choice == "Login":
 
     username = st.sidebar.text_input("User Name")
     password = st.sidebar.text_input("Password",type='password')
-    if st.sidebar.button("Login"):
+    if st.sidebar.checkbox("Login"):
         # if password == '12345':
         create_usertable()
         hashed_pswd = make_hashes(password)
