@@ -4,6 +4,7 @@ import pandas as pd
 import time
 import random
 import requests
+import streamlit as st
 
 def is_openai_api_key_valid(api_key):
     """
@@ -52,9 +53,9 @@ def connect_to_database(**kwargs):
 def run_sql_sql_server(sql: str):
     
     conn_sql_server = connect_to_database(host="sqlgpt.database.windows.net",user="sushant@sqlgpt",password="Solarsystem$123",database="sqlgpt")
-    # try:
     df = pd.read_sql(sql, conn_sql_server)
     return df
-    # except Exception as e:
-    #     print(e)
-        
+
+def setup_session_state():
+    st.session_state["my_question"] = None
+    st.session_state["df"] = None
