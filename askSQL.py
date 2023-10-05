@@ -19,6 +19,7 @@ def ask_question(question):
 
 @st.cache_data(show_spinner="Running SQL query ...")
 def run_sql(sql,question,auto_train):
+    df=None
     try:
         df = run_sql_sql_server(sql)
     except Exception as e:
@@ -35,13 +36,15 @@ def run_sql(sql,question,auto_train):
             #Any other database related error due to querying
             st.warning("Could not execute your SQL query",icon="🚨")
     if df is not None:
-        st.dataframe(df)
+        
         if len(df.index)>0 and auto_train:
             vn.add_question_sql(question=question,sql=sql)
             print("Training Data added successfully")
+        
     else:
-        st.write("There are no records for your SQL query in the database")
+        pass
 
+    return df
 
 
 # --- USER AUTHENTICATION ---
@@ -144,7 +147,7 @@ elif choice == "Login":
                     
                     st.subheader("You have logged in !!")
                     
-                    assistant_message_suggested = st.chat_message("assistant", avatar="https://ask.vanna.ai/static/img/vanna_circle.png")           
+                    assistant_message_suggested = st.chat_message("assistant", avatar="chatbot.png")           
                     my_question = st.session_state.get("my_question", default=None)
                     if my_question is None:
                         my_question = st.chat_input("Ask me a question about your data",)
@@ -159,42 +162,37 @@ elif choice == "Login":
                         if sql:
                             if st.session_state.get("show_sql", True):
                                 assistant_message_sql = st.chat_message(
-                                    "assistant", avatar="https://ask.vanna.ai/static/img/vanna_circle.png"
+                                    "assistant", avatar="chatbot.png"
                                 )
                                 assistant_message_sql.code(sql, language="sql", line_numbers=True)
-                            user_message_sql_check = st.chat_message("user")
-                            user_message_sql_check.write(f"Are you happy with the generated SQL code?")
-                            with user_message_sql_check:
-                                happy_sql = st.radio(
-                                    "Happy",
-                                    options=["", "yes", "no"],
-                                    key="radio_sql",
-                                    index=0,
-                                )
-                            if happy_sql == "no":
-                                st.warning("Please fix the generated SQL code.")
-                                sql_response = st.chat_input("Write your SQL query",)
-                                user_message_sql_rewrite = st.chat_message("user")
-                                user_message_sql_rewrite.code(sql_response, language="sql", line_numbers=True)
-                                #sql_response = code_editor(sql, lang="sql")
-                                fixed_sql_query = sql_response
-                                print(fixed_sql_query)
-                                if fixed_sql_query != "" and fixed_sql_query is not None:
-                                    try:
-                                        df = run_sql_sql_server(sql=fixed_sql_query)
-                                    except:
-                                        st.warning("Check your SQL query, there is something wronng !!")
-                                        df = None
-                                else:
-                                    df = None
-                            elif happy_sql == "yes":
-                                try:
-                                    df = run_sql_sql_server(sql=sql)
-                                except:
-                                    st.warning("Check your SQL query, there is something wronng !!")
-                                    df = None
-                            else:
-                                df = None
+                            # user_message_sql_check = st.chat_message("user")
+                            # user_message_sql_check.write(f"Are you happy with the generated SQL code?")
+                            # with user_message_sql_check:
+                            #     happy_sql = st.radio(
+                            #         "Happy",
+                            #         options=["", "yes", "no"],
+                            #         key="radio_sql",
+                            #         index=0,
+                            #     )
+                            # if happy_sql == "no":
+                            #     st.warning("Please fix the generated SQL code.")
+                            #     sql_response = st.chat_input("Write your SQL query",)
+                            #     user_message_sql_rewrite = st.chat_message("user")
+                            #     user_message_sql_rewrite.code(sql_response, language="sql", line_numbers=True)
+                            #     #sql_response = code_editor(sql, lang="sql")
+                            #     fixed_sql_query = sql_response
+                            #     print(fixed_sql_query)
+                            #     if fixed_sql_query != "" and fixed_sql_query is not None:
+                            #         try:
+                            #             df = run_sql(sql=fixed_sql_query)
+                            #         except:
+                            #             st.warning("Check your SQL query, there is something wronng !!")
+                            #             df = None
+                            #     else:
+                            #         df = None
+                            # elif happy_sql == "yes":
+                            #     try:
+                            df = run_sql(sql=sql,question=my_question,auto_train=False)
                             
                             if df is not None:
                                 st.session_state["df"] = df
@@ -204,15 +202,19 @@ elif choice == "Login":
                                     df = st.session_state.get("df")
                                     assistant_message_table = st.chat_message(
                                         "assistant",
-                                        avatar="https://ask.vanna.ai/static/img/vanna_circle.png",
+                                        avatar="chatbot.png",
                                     )
                                     if len(df) > 10:
                                         assistant_message_table.text("First 10 rows of data")
                                         assistant_message_table.dataframe(df.head(10))
                                     else:
                                         assistant_message_table.dataframe(df)
+                                        
+                            #st.session_state["my_question"] = my_question
+                            st.chat_input(placeholder="Click Rerun to ask another question",disabled=True)
+                            
                         else:
-                            assistant_message_error = st.chat_message("assistant", avatar="https://ask.vanna.ai/static/img/vanna_circle.png")
+                            assistant_message_error = st.chat_message("assistant", avatar="chatbot.png")
                             assistant_message_error.error("I wasn't able to generate SQL for that question")
                 else: 
                     st.warning("Invalid API Key",icon="⚠️")    
