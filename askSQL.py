@@ -196,19 +196,25 @@ elif choice == "Login":
                             
                             if df is not None:
                                 st.session_state["df"] = df
-                                
+                            
                             if st.session_state.get("df") is not None:
                                 if st.session_state.get("show_table", True):
                                     df = st.session_state.get("df")
-                                    assistant_message_table = st.chat_message(
-                                        "assistant",
-                                        avatar="chatbot.png",
-                                    )
-                                    if len(df) > 10:
-                                        assistant_message_table.text("First 10 rows of data")
-                                        assistant_message_table.dataframe(df.head(10))
-                                    else:
+                                    if df.shape[0]>0:
+                                        
+                                        assistant_message_table = st.chat_message(
+                                            "assistant",
+                                            avatar="chatbot.png",
+                                        )
+                                        # if len(df) > 10:
+                                        #     assistant_message_table.text("First 10 rows of data")
+                                        #     assistant_message_table.dataframe(df.head(10))
+                                        # else:
                                         assistant_message_table.dataframe(df)
+                                    elif df.shape[0]==0:
+                                        
+                                        st.warning("I cant find any records in the database for your question: "+"\""+my_question+"\"",icon="🚨")
+                                            
                                         
                             #st.session_state["my_question"] = my_question
                             st.chat_input(placeholder="Click Rerun to ask another question",disabled=True)
